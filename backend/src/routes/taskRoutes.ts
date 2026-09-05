@@ -6,11 +6,12 @@ import {
   updateTask,
   deleteTask
 } from '../controllers/taskController';
+import { authMiddleware } from '../middleware/auth'; // PRIDAJ TENTO IMPORT
 
 const router = express.Router();
 
-// Dočasne vypnutá autentifikácia pre testovanie
-// router.use(authMiddleware);
+// Apply auth middleware to all routes
+router.use(authMiddleware);
 
 router.get('/', getTasks);
 router.get('/:id', getTaskById);

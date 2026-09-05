@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Task } from '../types/task';
 import { useUpdateTask, useDeleteTask } from '../hooks/useTasks';
+import { Edit2, Trash2, Check, Clock, AlertCircle } from 'lucide-react';
 
 interface TaskItemProps {
   task: Task;
@@ -14,107 +15,119 @@ const TaskItem: React.FC<TaskItemProps> = ({ task }) => {
   const deleteTask = useDeleteTask();
 
   const priorityColors = {
-    LOW: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-    MEDIUM: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-    HIGH: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+    LOW: 'bg-green-500/20 text-green-400 border-green-500/20',
+    MEDIUM: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/20',
+    HIGH: 'bg-red-500/20 text-red-400 border-red-500/20',
+  };
+
+  const priorityIcons = {
+    LOW: '🟢',
+    MEDIUM: '🟡',
+    HIGH: '🔴',
   };
 
   const handleToggleComplete = () => {
-    updateTask.mutate({
-      id: task.id,
-      completed: !task.completed,
-    });
+    updateTask.mutate({ id: task.id, completed: !task.completed });
   };
 
   const handleDelete = () => {
-    if (window.confirm('Are you sure you want to delete this task?')) {
+    if (window.confirm('Delete this task?')) {
       deleteTask.mutate(task.id);
     }
   };
 
   const handleUpdateTitle = () => {
     if (editedTitle.trim() && editedTitle !== task.title) {
-      updateTask.mutate({
-        id: task.id,
-        title: editedTitle,
-      });
+      updateTask.mutate({ id: task.id, title: editedTitle });
     }
     setIsEditing(false);
   };
 
+  const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && !task.completed;
+
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: 20 }}
-      className={`card p-4 transition-all duration-200 ${
-        task.completed ? 'opacity-75' : ''
+      className={`glass rounded-xl p-4 border border-white/5 transition-all duration-300 ${
+        task.completed ? 'opacity-60' : 'hover:border-purple-500/20'
       }`}
     >
-      <div className="flex items-start gap-3">
-        <input
-          type="checkbox"
-          checked={task.completed}
-          onChange={handleToggleComplete}
-          className="mt-1 w-5 h-5 rounded border-gray-300 text-primary-500 focus:ring-primary-500 cursor-pointer"
-        />
+      <div className="flex items-start gap-4">
+        <button
+          onClick={handleToggleComplete}
+          className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all duration-300 flex-shrink-0 mt-1 ${
+            task.completed
+              ? 'bg-gradient-to-br from-purple-500 to-pink-500 border-transparent'
+              : 'border-gray-600 hover:border-purple-500'
+          }`}
+        >
+          {task.completed && <Check className="w-4 h-4 text-white" />}
+        </button>
 
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           {isEditing ? (
             <div className="flex gap-2">
               <input
                 type="text"
                 value={editedTitle}
                 onChange={(e) => setEditedTitle(e.target.value)}
-                className="input-field flex-1"
+                className="input-modern flex-1"
                 autoFocus
                 onKeyDown={(e) => e.key === 'Enter' && handleUpdateTitle()}
               />
-              <button
-                onClick={handleUpdateTitle}
-                className="btn-primary"
-              >
+              <button onClick={handleUpdateTitle} className="btn-primary-modern">
                 Save
               </button>
             </div>
           ) : (
             <div>
-              <h3 className={`text-lg font-semibold dark:text-white ${
-                task.completed ? 'line-through text-gray-500 dark:text-gray-400' : ''
+              <h3 className={`text-lg font-semibold text-white ${
+                task.completed ? 'line-through text-gray-500' : ''
               }`}>
                 {task.title}
+                {isOverdue && (
+                  <span className="ml-2 text-xs text-red-400 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    Overdue
+                  </span>
+                )}
               </h3>
               {task.description && (
-                <p className="text-gray-600 dark:text-gray-400 mt-1 text-sm">
-                  {task.description}
-                </p>
+                <p className="text-gray-400 text-sm mt-1">{task.description}</p>
               )}
             </div>
           )}
 
-          <div className="flex flex-wrap items-center gap-2 mt-2">
-            <span className={`text-xs px-2 py-1 rounded-full ${priorityColors[task.priority]}`}>
-              {task.priority}
+          <div className="flex flex-wrap items-center gap-2 mt-3">
+            <span className={`badge-modern ${priorityColors[task.priority]}`}>
+              {priorityIcons[task.priority]} {task.priority}
             </span>
-            <span className="text-xs text-gray-500 dark:text-gray-400">
-              {new Date(task.createdAt).toLocaleDateString()}
-            </span>
+            {task.dueDate && (
+              <span className={`badge-modern bg-white/5 text-gray-400 border border-white/5 flex items-center gap-1 ${
+                isOverdue ? 'text-red-400 border-red-500/20' : ''
+              }`}>
+                <Clock className="w-3 h-3" />
+                {new Date(task.dueDate).toLocaleDateString()}
+              </span>
+            )}
           </div>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex gap-1 flex-shrink-0">
           <button
             onClick={() => setIsEditing(!isEditing)}
-            className="p-2 text-gray-500 hover:text-primary-500 transition-colors"
+            className="p-2 rounded-lg text-gray-500 hover:text-white hover:bg-white/5 transition-all duration-200"
           >
-            ✏️
+            <Edit2 className="w-4 h-4" />
           </button>
           <button
             onClick={handleDelete}
-            className="p-2 text-gray-500 hover:text-red-500 transition-colors"
+            className="p-2 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
           >
-            🗑️
+            <Trash2 className="w-4 h-4" />
           </button>
         </div>
       </div>

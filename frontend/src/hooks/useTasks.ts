@@ -5,21 +5,11 @@ import toast from 'react-hot-toast';
 
 const API_URL = 'http://localhost:5000/api/tasks';
 
-// Mock token - in real app, get from auth
-const token = 'mock-jwt-token';
-
-const api = axios.create({
-  baseURL: API_URL,
-  headers: {
-    Authorization: `Bearer ${token}`,
-  },
-});
-
 export const useTasks = () => {
   return useQuery({
     queryKey: ['tasks'],
     queryFn: async () => {
-      const { data } = await api.get<Task[]>('/');
+      const { data } = await axios.get<Task[]>(API_URL);
       return data;
     },
   });
@@ -30,15 +20,15 @@ export const useCreateTask = () => {
   
   return useMutation({
     mutationFn: async (input: CreateTaskInput) => {
-      const { data } = await api.post<Task>('/', input);
+      const { data } = await axios.post<Task>(API_URL, input);
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
       toast.success('Task created successfully! 🎉');
     },
-    onError: () => {
-      toast.error('Failed to create task');
+    onError: (error: any) => {
+      toast.error(error.response?.data?.error || 'Failed to create task');
     },
   });
 };
@@ -48,15 +38,15 @@ export const useUpdateTask = () => {
   
   return useMutation({
     mutationFn: async ({ id, ...input }: UpdateTaskInput & { id: number }) => {
-      const { data } = await api.put<Task>(`/${id}`, input);
+      const { data } = await axios.put<Task>(`${API_URL}/${id}`, input);
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
       toast.success('Task updated! ✅');
     },
-    onError: () => {
-      toast.error('Failed to update task');
+    onError: (error: any) => {
+      toast.error(error.response?.data?.error || 'Failed to update task');
     },
   });
 };
@@ -66,14 +56,14 @@ export const useDeleteTask = () => {
   
   return useMutation({
     mutationFn: async (id: number) => {
-      await api.delete(`/${id}`);
+      await axios.delete(`${API_URL}/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
       toast.success('Task deleted! 🗑️');
     },
-    onError: () => {
-      toast.error('Failed to delete task');
+    onError: (error: any) => {
+      toast.error(error.response?.data?.error || 'Failed to delete task');
     },
   });
 };
