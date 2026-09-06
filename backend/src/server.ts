@@ -10,7 +10,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: ['http://localhost:3000', 'https://task-manager-app-sepia-psi.vercel.app', 'https://task-manager-4u1n2ilkm-lubomir92-s-projects.vercel.app'],
   credentials: true
 }));
 app.use(express.json());
