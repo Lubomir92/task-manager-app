@@ -4,6 +4,8 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 
+console.log('🔧 AuthController loaded');
+
 const prisma = new PrismaClient();
 
 const registerSchema = z.object({
@@ -19,6 +21,8 @@ const loginSchema = z.object({
 
 export const register = async (req: Request, res: Response) => {
   try {
+    console.log('📝 Register request received:', req.body.email);
+    
     const validatedData = registerSchema.parse(req.body);
     
     const existingUser = await prisma.user.findUnique({
@@ -50,6 +54,7 @@ export const register = async (req: Request, res: Response) => {
       user: { id: user.id, email: user.email, name: user.name }
     });
   } catch (error) {
+    console.error('❌ Registration error:', error);
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.errors });
     }
@@ -59,6 +64,8 @@ export const register = async (req: Request, res: Response) => {
 
 export const login = async (req: Request, res: Response) => {
   try {
+    console.log('📥 Login request received:', req.body.email);
+    
     const validatedData = loginSchema.parse(req.body);
     
     const user = await prisma.user.findUnique({
@@ -86,6 +93,7 @@ export const login = async (req: Request, res: Response) => {
       user: { id: user.id, email: user.email, name: user.name }
     });
   } catch (error) {
+    console.error('❌ Login error:', error);
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.errors });
     }
