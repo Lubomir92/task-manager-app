@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Task, CreateTaskInput, UpdateTaskInput } from '../types/task';
 import toast from 'react-hot-toast';
 
-const API_URL = 'http://localhost:5000/api/tasks';
+const API_URL = 'https://task-manager-backend.onrender.com/api/tasks';
 
 export const useTasks = () => {
   return useQuery({
